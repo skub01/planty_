@@ -8,7 +8,7 @@
   },
   "hosting": {
     "site": "planty-397715",
-    "public": "public",
+    "public": "build",
     "ignore": [
       "firebase.json",
       ".env.local",
