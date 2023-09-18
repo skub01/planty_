@@ -5,7 +5,6 @@ import AOS from "aos";
 import { resetRecipes } from "../../store/allRecipesSlice";
 
 const Home = (props) => {
-  const username = useSelector((state) => state.auth.me.username);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   AOS.init();

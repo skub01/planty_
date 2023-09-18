@@ -6,7 +6,7 @@ export const getAllRecipes = createAsyncThunk(
   async ({ intolerances, type, page }) => {
     try {
       const params = {
-        apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+        apiKey: process.env.REACT_APP_EX_API_KEY,
         diet: "vegan",
         number: 8,
         offset: (page - 1) * 8,
@@ -44,7 +44,7 @@ export const getIngredientRecipes = createAsyncThunk(
     while (retries <= maxRetries) {
       try {
         const params = {
-          apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+          apiKey: process.env.REACT_APP_EX_API_KEY,
           includeIngredients: currentIngredients.join(","),
           diet: "vegan",
           number: 4,

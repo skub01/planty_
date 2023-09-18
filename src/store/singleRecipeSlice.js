@@ -9,7 +9,7 @@ export const getSingleRecipe = createAsyncThunk(
         `https://api.spoonacular.com/recipes/${id}/information`,
         {
           params: {
-             apiKey: process.env.REACT_APP_FIREBASE_API_KEY
+             apiKey: process.env.REACT_APP_EX_API_KEY
           },
         }
       );

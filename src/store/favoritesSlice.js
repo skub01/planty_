@@ -9,7 +9,7 @@ export const getFavoriteRecipes = createAsyncThunk(
         `https://api.spoonacular.com/recipes/informationBulk`,
         {
           params: {
-            apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+            apiKey: process.env.REACT_APP_EX_API_KEY,
             ids: recipeIds.join(","),
           },
         }
