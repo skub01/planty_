@@ -1,43 +1,33 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
-// this returns all favorites for a certain user (just the recipe ID numbers)
-export const getUserRecipes = createAsyncThunk("getFavs", async (id) => {
-  try {
-    const { data } = await axios.get(`/api/userrecipes/${id}`);
-    return data;
-  } catch (err) {
-    console.log(err);
-  }
-});
+export const handleFavoriteAsync = createAsyncThunk(
+  "events/handleEventAsync",
+  async (recipe) => {
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
 
-export const addFavorite = createAsyncThunk(
-  "addFav",
-  async ({ userId, recipeId, title, image }) => {
     try {
-      const { data } = await axios.post(
-        `/api/userrecipes/${userId}/addFavorite`,
-        { recipeId, title, image }
-      );
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    }
-  }
-);
+      const userDocSnapshot = await getDoc(userDocRef);
+      const userRecipes = userDocSnapshot.data()?.userRecipes || [];
+      let updatedRecipes;
 
-export const removeFavorite = createAsyncThunk(
-  "removeFav",
-  async ({ userId, recipeId }) => {
-    try {
-      const { data } = await axios.delete(
-        `/api/userrecipes/${userId}/removeFavorite/${recipeId}`
-      );
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
+      const existingRecipe = userRecipes.find((r) => r.id === recipe.id);
+
+   if (existingRecipe) {
+        updatedRecipes = userRecipes.filter((r) => r.id !== recipe.id);
+      } else {
+        updatedRecipes = [...userRecipes, recipe];
+      }
+
+      await updateDoc(userDocRef, {
+        userRecipes: updatedRecipes,
+      });
+
+      return updatedRecipes;
+    } catch (error) {
+      console.error("Error updating user events:", error);
+      throw error;
     }
   }
 );
@@ -47,20 +37,12 @@ const userRecipesSlice = createSlice({
   initialState: {
     userRecipes: [],
   },
-  reducers: {},
+  reducers: {
+  },
   extraReducers: (builder) => {
-    builder
-      .addCase(getUserRecipes.fulfilled, (state, { payload }) => {
-        state.userRecipes = payload;
-      })
-      .addCase(addFavorite.fulfilled, (state, { payload }) => {
-        state.userRecipes.push(payload);
-      })
-      .addCase(removeFavorite.fulfilled, (state, { payload }) => {
-        state.userRecipes = state.userRecipes.filter(
-          (recipe) => recipe.recipeId !== payload.recipeId
-        );
-      });
+    builder.addCase(handleFavoriteAsync.fulfilled, (state, action) => {
+      state.userRecipes = action.payload; 
+    });
   },
 });
 

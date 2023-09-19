@@ -1,20 +1,23 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 import { getSingleRecipe } from "../../store/singleRecipeSlice";
 import BackButton from "./BackButton";
+import { auth, db } from "../../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import {
   addFavorite,
   getUserRecipes,
+  handleFavoriteAsync,
   removeFavorite,
 } from "../../store/userRecipesSlice";
 import Toastify from "toastify-js";
 
 const SingleRecipe = (props) => {
-  const userId = useSelector((state) => state.auth.me.id);
   const favorites = useSelector((state) => state.userRecipes.userRecipes);
   const dispatch = useDispatch();
   const { id } = useParams();
+  const [userRecipes, setUserRecipes] = useState([]);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const filter = queryParams.get("filter");
@@ -24,31 +27,27 @@ const SingleRecipe = (props) => {
     if (id) {
       dispatch(getSingleRecipe(id));
     }
-  }, [dispatch, id, userId]);
+  }, [dispatch, id]);
 
   const recipe = useSelector((state) => state.singleRecipe.singleRecipe);
 
-  const handleAddFavorite = (recipeId, title, image) => {
-    if (userId) {
-      const recipeInFavorites = favorites.find(
-        (fav) => fav.recipeId === recipeId
-      );
-      if (recipeInFavorites) {
-        dispatch(removeFavorite({ userId, recipeId: id })).then(() =>
-          dispatch(getUserRecipes(userId))
-        );
-      } else {
-        if (recipe) {
-          dispatch(
-            addFavorite({
-              userId,
-              recipeId,
-              title: recipe.title,
-              image: recipe.image,
-            })
-          );
+  useEffect(() => {
+    const fetchUserRecipes = async () => {
+      if (auth.currentUser) {
+        const userDocRef = doc(db, "users", auth.currentUser.uid);
+        const userDocSnapshot = await getDoc(userDocRef);
+        if (userDocSnapshot.exists()) {
+          const userData = userDocSnapshot.data();
+          setUserRecipes(userData.userRecipes || []);
         }
       }
+    };
+    fetchUserRecipes();
+  }, []);
+
+  const handleAddFavorite = (recipe) => {
+    if (auth.currentUser) {
+      dispatch(handleFavoriteAsync(recipe));
     } else {
       Toastify({
         text: "Please log in or register to save recipes to your favorites!",
@@ -98,7 +97,7 @@ const SingleRecipe = (props) => {
                   fontSize: "32px",
                 }}
                 onClick={() =>
-                  handleAddFavorite(recipe.id, recipe.title, recipe.image)
+                  handleAddFavorite(recipe)
                 }
               >
                 <span
