@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { auth, db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 const Favorites = ( { user } ) => {
   const [favorites, setFavorites] = useState([]);
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchUserFavorites = async () => {
@@ -22,7 +21,7 @@ const Favorites = ( { user } ) => {
         fetchUserFavorites();
       }, []);
 
-      const favoriteRecipes = useSelector((state) => state.userRecipes.userRecipes);
+const favoriteRecipes = useSelector((state) => state.userRecipes.userRecipes);
 
   return (
     <div className="favorites-container">
