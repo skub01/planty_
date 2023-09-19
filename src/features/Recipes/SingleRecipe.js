@@ -14,7 +14,6 @@ import {
 import Toastify from "toastify-js";
 
 const SingleRecipe = (props) => {
-  const favorites = useSelector((state) => state.userRecipes.userRecipes);
   const dispatch = useDispatch();
   const { id } = useParams();
   const [userRecipes, setUserRecipes] = useState([]);
@@ -37,13 +36,15 @@ const SingleRecipe = (props) => {
         const userDocRef = doc(db, "users", auth.currentUser.uid);
         const userDocSnapshot = await getDoc(userDocRef);
         if (userDocSnapshot.exists()) {
-          const userData = userDocSnapshot.data();
-          setUserRecipes(userData.userRecipes || []);
+          const userData = userDocSnapshot.data().userRecipes;
+          setUserRecipes(userData || []);
         }
       }
     };
     fetchUserRecipes();
-  }, []);
+  }, [userRecipes]);
+
+  const favorites = useSelector((state) => state.userRecipes.userRecipes);
 
   const handleAddFavorite = (recipe) => {
     if (auth.currentUser) {
@@ -96,18 +97,23 @@ const SingleRecipe = (props) => {
                   border: "none",
                   fontSize: "32px",
                 }}
+                className={`button ${
+               userRecipes.some((fav) => fav.id === recipe.id)
+                    ? "active"
+                    : ""
+                }`}
                 onClick={() =>
                   handleAddFavorite(recipe)
                 }
               >
                 <span
                   className={`star-icon ${
-                    favorites.some((fav) => fav.recipeId === recipe.id)
+                    userRecipes.some((fav) => fav.id === recipe.id)
                       ? "active"
                       : ""
                   }`}
                 >
-                  {favorites.some((fav) => fav.recipeId === recipe.id)
+                  {userRecipes.some((fav) => fav.id === recipe.id)
                     ? "★"
                     : "☆"}
                 </span>
